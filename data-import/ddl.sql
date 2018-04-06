@@ -29,3 +29,13 @@ CREATE TABLE IF NOT EXISTS apa_prijimatelia (
   suma                     DECIMAL,
   rok                      INTEGER
 );
+
+-- DROP TABLE apa_ziadosti_projektove_podpory;
+CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory (
+  id                       SERIAL,
+  ziadatel                 TEXT,
+  url                      TEXT,
+  ico                      TEXT,
+  rok                      INTEGER,
+  ziadosti                 TEXT
+);
