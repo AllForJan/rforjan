@@ -1,4 +1,6 @@
+-- DROP TABLE apa_ziadosti_projektove_podpory;
 CREATE TABLE IF NOT EXISTS apa_ziadosti_projektove_podpory (
+  id                       SERIAL,
   ziadatel                 TEXT,
   ico                      TEXT,
   kod_projektu             TEXT,
