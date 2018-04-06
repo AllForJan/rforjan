@@ -1,12 +1,16 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    hippie_csv (0.1.0)
+      rchardet
     pg (1.0.0)
+    rchardet (1.7.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  hippie_csv
   pg
 
 BUNDLED WITH
