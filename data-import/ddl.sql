@@ -16,3 +16,16 @@ CREATE TABLE IF NOT EXISTS apa_ziadosti_projektove_podpory (
   vyplateny_nfp_celkom     DECIMAL,
   pocet_bodov              INTEGER
 );
+
+-- DROP TABLE apa_prijimatelia;
+CREATE TABLE IF NOT EXISTS apa_prijimatelia (
+  id                       SERIAL,
+  url                      TEXT,
+  meno                     TEXT,
+  psc                      TEXT,
+  obec                     TEXT,
+  opatrenie                TEXT,
+  opatrenie_kod            TEXT,
+  suma                     DECIMAL,
+  rok                      INTEGER
+);
