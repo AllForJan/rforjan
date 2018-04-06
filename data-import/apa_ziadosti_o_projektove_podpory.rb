@@ -5,7 +5,9 @@ require_relative 'dbconn'
 $conn = db_connection
 
 BATCH_SIZE = 1000
+TABLE_NAME = 'apa_ziadosti_projektove_podpory'.freeze
 
+$conn.exec("DELETE from #{TABLE_NAME}")
 all_values = []
 
 def insert_batch(all_values)
@@ -13,7 +15,7 @@ def insert_batch(all_values)
     dollars = 1.upto(batch.size).map { |i| "$#{i + batch.size * idx}" }.join(',')
     "(#{dollars})"
   }.join(', ')
-  sql = "INSERT INTO  apa_ziadosti_projektove_podpory
+  sql = "INSERT INTO #{TABLE_NAME}
 (ziadatel, ico, kod_projektu, nazov_projektu, vuc, cislo_vyzvy,
     kod_podopatrenia, status, datum_zastavenia_konania,
     dovod_zastavenie_konania, datum_ucinnosti_zmluvy, schvaleny_nfp_celkom,
@@ -52,6 +54,10 @@ HippieCSV.read('data/apa_ziadosti-o-projektove-podpory_2018-04-03.csv').each_wit
 end
 
 insert_batch(all_values)
+
+$conn.exec("SELECT COUNT(*) as c from #{TABLE_NAME}") do |result|
+  ap "Total row count #{result.first['c']}"
+end
 
 
 
