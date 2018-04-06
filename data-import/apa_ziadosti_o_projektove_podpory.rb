@@ -58,7 +58,3 @@ insert_batch(all_values)
 $conn.exec("SELECT COUNT(*) as c from #{TABLE_NAME}") do |result|
   ap "Total row count #{result.first['c']}"
 end
-
-
-
-
