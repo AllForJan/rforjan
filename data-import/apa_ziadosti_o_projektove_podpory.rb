@@ -1,7 +1,10 @@
-require 'pg'
 require 'hippie_csv'
+require 'awesome_print'
+require_relative 'dbconn'
 
-HippieCSV.stream('data/apa_ziadosti-o-projektove-podpory_2018-04-03.csv').each_with_index do |index, row|
+conn = db_connection
+
+HippieCSV.read('data/apa_ziadosti-o-projektove-podpory_2018-04-03.csv').each_with_index do |row, index|
   if index == 0
     $header = row
   else
@@ -9,14 +12,23 @@ HippieCSV.stream('data/apa_ziadosti-o-projektove-podpory_2018-04-03.csv').each_w
         case field
         when 'Datum RoN/datum zastavenia konania'
         when 'Datum ucinnosti zmluvy'
+          begin
             Date.parse(value)
-        else value 
+          rescue
+              nil
+          end
+        else value
         end
 
-    end.map { |s| "'#{s}'" }.join(', ')
+    end
 
-    conn.execute(<<~SQL)
-        INSERT INTO  apa_ziadosti_projektove_podpory (ziadatel, ico, kod_projektu, nazov_projektu, vuc, cislo_vyzvy, kod_podopatrenia, status, datum_zastavenia_konania, dovod_zastavenie_konania, datum_ucinnosti_zmluvy, schvaleny_nfp_celkom, vyplateny_nfp_celkom, pocet_bodov) VALUES (#{values}.join(', '))})
-    SQL
+    sql = "
+        INSERT INTO  apa_ziadosti_projektove_podpory
+          (ziadatel, ico, kod_projektu, nazov_projektu, vuc, cislo_vyzvy,
+            kod_podopatrenia, status, datum_zastavenia_konania,
+            dovod_zastavenie_konania, datum_ucinnosti_zmluvy, schvaleny_nfp_celkom,
+            vyplateny_nfp_celkom, pocet_bodov) VALUES (#{1.upto(values.size).map { |i| "$#{i}"}.join(',') })
+    "
+
   end
 end
