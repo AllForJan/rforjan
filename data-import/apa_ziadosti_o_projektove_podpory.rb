@@ -32,5 +32,8 @@ HippieCSV.read('data/apa_ziadosti-o-projektove-podpory_2018-04-03.csv').each_wit
             vyplateny_nfp_celkom, pocet_bodov) VALUES (#{1.upto(values.size).map { |i| "$#{i}"}.join(',') })
     "
     conn.exec_params(sql, values)
+    if index % 100 == 0
+      ap "Imported #{index} records"
+    end
   end
 end
