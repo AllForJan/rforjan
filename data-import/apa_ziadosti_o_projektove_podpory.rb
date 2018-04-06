@@ -17,6 +17,8 @@ HippieCSV.read('data/apa_ziadosti-o-projektove-podpory_2018-04-03.csv').each_wit
           rescue
               nil
           end
+          when 'Schvaleny NFP celkom', 'Vyplateny NFP celkom'
+            value.sub(',', '.')
         else value
         end
 
@@ -29,6 +31,6 @@ HippieCSV.read('data/apa_ziadosti-o-projektove-podpory_2018-04-03.csv').each_wit
             dovod_zastavenie_konania, datum_ucinnosti_zmluvy, schvaleny_nfp_celkom,
             vyplateny_nfp_celkom, pocet_bodov) VALUES (#{1.upto(values.size).map { |i| "$#{i}"}.join(',') })
     "
-
+    conn.exec_params(sql, values)
   end
 end
