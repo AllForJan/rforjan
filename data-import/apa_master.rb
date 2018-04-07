@@ -1,5 +1,5 @@
 require_relative 'dbconn'
-require 'I18n'
+require 'i18n'
 
 I18n.config.available_locales = :en
 
@@ -9,7 +9,7 @@ end
 
 $conn = db_connection
 
-prijimatelia = $conn.exec('select * from apa_prijimatelia limit 10000').to_a
+prijimatelia = $conn.exec('select * from apa_prijimatelia group by meno, rok, pscobec, opatrenie_kod limit 10000').to_a
 ziadosti = $conn.exec('select * from apa_ziadosti_o_priame_podpory_diely limit 10000').to_a
 
 
