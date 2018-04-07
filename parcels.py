@@ -10,7 +10,6 @@ import os
 def getPartCoords(location, part):    
     query = "select geom from parts_2016 where location = '"+location+"' and part = '"+part+"'"
     conn_string = "postgresql://rforjan:{}@138.68.66.142:5432/rforjan".format(os.environ['PG_PASS'])
-    print(conn_string)
     conn = psycopg2.connect(conn_string)
     curs = conn.cursor()
     curs.execute(query, (23,))  # one geometry
