@@ -5,9 +5,7 @@ require 'dotenv'
 require 'tempfile'
 require 'bigdecimal'
 require 'active_support/core_ext/object/blank'
-require 'i18n'
-
-I18n.config.available_locales = :en
+require_relative '../api/app/models/normalizer'
 
 Dotenv.load
 
@@ -45,7 +43,7 @@ CSV.foreach(path, col_sep: ';', quote_char: '"')
     /^(\d+(\.\d+)?) ha$/.match(csv_line[7])
     vymera = BigDecimal($1)
 
-    ziadatel_normalized = I18n.transliterate(csv_line[1]).downcase.gsub(/[^\w]/, ' ').split.compact.sort.uniq.join(' ')
+    ziadatel_normalized = Normalizer.normalize_name(csv_line[1])
 
     normalized = csv_line.map(&:presence)
     normalized[2] = ico
