@@ -5,6 +5,7 @@ from shapely.geometry import Polygon
 from shapely import wkb
 import psycopg2
 import os
+from flask_cors import CORS
 
 
 def getPartCoords(location, part):    
@@ -55,6 +56,7 @@ def xyToLatLong(x, y, i=0):
 
 from flask import Flask, request, jsonify
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/parcels')
 def parcels():
