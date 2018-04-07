@@ -51,7 +51,7 @@ CSV.foreach(path, col_sep: ';', quote_char: '"')
     normalized = csv_line.map(&:presence)
     normalized[3] = rok
     normalized[7] = vymera
-    normalized = normalized.append(normalize_name(normalized[1]))
+    normalized << normalize_name(normalized[1])
     normalized
   }
   .each_slice(20_000) do |slice|
