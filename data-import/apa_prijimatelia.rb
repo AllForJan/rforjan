@@ -4,7 +4,7 @@ require 'bigdecimal/util'
 require 'hippie_csv'
 require 'awesome_print'
 require_relative 'dbconn'
-require 'i18n'
+require_relative '../api/app/models/normalizer'
 
 $conn = db_connection
 
@@ -13,11 +13,6 @@ TABLE_NAME = 'apa_prijimatelia'.freeze
 
 $conn.exec("DELETE from #{TABLE_NAME}")
 all_values = []
-
-def normalize_name(name)
-  I18n.config.available_locales = :en
-  I18n.transliterate(name).downcase.gsub(/[^\w]/,' ').split.compact.sort.uniq.join(' ')
-end
 
 def insert_batch(all_values)
   placeholders = all_values.each_with_index.map { |batch, idx|
@@ -46,7 +41,7 @@ HippieCSV.read('data/apa_prijimatelia_2018-03-15.csv').each_with_index do |row, 
         end
     end
 
-    values.append(normalize_name(row[1]))
+    values.append(Normalizer.normalize_name(row[1]))
 
     all_values << values
 
