@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory_diely (
   lokalita                 TEXT,
   diel                     TEXT,
   kultura                  TEXT,
-  vymera                   DECIMAL
+  vymera                   DECIMAL,
+  ziadatel_normalized      TEXT
 );
 
 -- DROP TABLE crp_projekty;

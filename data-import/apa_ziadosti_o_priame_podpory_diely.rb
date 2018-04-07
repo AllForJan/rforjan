@@ -6,6 +6,14 @@ require 'tempfile'
 require 'bigdecimal'
 require 'active_support/core_ext/object/blank'
 
+require 'i18n'
+
+I18n.config.available_locales = :en
+
+def normalize_name(name)
+  I18n.transliterate(name).downcase.gsub(/[^\w]/,' ').split.compact.sort.uniq.join(' ')
+end
+
 Dotenv.load
 
 DB = Sequel.connect(adapter: 'postgres', host: '138.68.66.142', database: 'rforjan', user: 'rforjan', password: ENV['PG_PASS'])
@@ -43,6 +51,7 @@ CSV.foreach(path, col_sep: ';', quote_char: '"')
     normalized = csv_line.map(&:presence)
     normalized[3] = rok
     normalized[7] = vymera
+    normalized = normalized.append(normalize_name(normalized[1]))
     normalized
   }
   .each_slice(20_000) do |slice|
