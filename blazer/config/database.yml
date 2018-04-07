@@ -24,6 +24,11 @@ default: &default
 development:
   <<: *default
   database: rforjan
+  host: 138.68.66.142
+  port: 5432
+  username: rforjan
+  password: <%= ENV['PG_PASS'] %>
+
 
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
@@ -82,4 +87,3 @@ production:
   <<: *default
   database: rforjan
   username: rforjan
-  password: <%= ENV['PG_PASS'] %>
