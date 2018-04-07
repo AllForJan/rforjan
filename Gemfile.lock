@@ -29,6 +29,7 @@ DEPENDENCIES
   awesome_print
   dotenv
   hippie_csv
+  i18n
   pg
   sequel
 
