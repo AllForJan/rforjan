@@ -15,6 +15,7 @@ pandas-profiling = "*"
 "psycopg2" = "*"
 requests = "*"
 shapely = "*"
+flask = "*"
 
 [dev-packages]
 
