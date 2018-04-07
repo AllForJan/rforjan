@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory_diely (
   vymera                   DECIMAL
 );
 
--- DROP TABLE apa_ziadosti_projektove_podpory;
+-- DROP TABLE crp_projekty;
 CREATE TABLE IF NOT EXISTS crp_projekty (
   id                       SERIAL,
   url                      TEXT,
@@ -69,4 +69,29 @@ CREATE TABLE IF NOT EXISTS crp_projekty (
   crp_id                   TEXT,
   vyska_pomoci             TEXT,
   vyska_pomoci_num         DECIMAL
+);
+
+-- DROP TABLE crp_zmluvy;
+CREATE TABLE IF NOT EXISTS crp_zmluvy (
+  id                       SERIAL,
+  url                      TEXT,
+  nazov                    TEXT,
+  obstaravatel_nazov       TEXT,
+  obstaravatel_ic          TEXT,
+  dodavatel_nazov          TEXT,
+  dodavatel_ico            TEXT,
+  dodavatel_adresa         TEXT,
+  nazov_zmluvy             TEXT,
+  datum_uzavretia          TIMESTAMP,
+  datum_ucinnosti          TIMESTAMP,
+  poznamka_k_ucinnosti     TEXT,
+  datum_platnosti          TIMESTAMP,
+  suma_s_dph               TEXT,
+  poznamka                 TEXT,
+  prilohy_url              TEXT,
+  prilohy_nazvy            TEXT,
+  prilohy_subory           TEXT,
+  interne_id               TEXT,
+  datum_zverejnenia        TIMESTAMP,
+  stav                     TEXT
 );
