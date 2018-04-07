@@ -1,55 +1,51 @@
-require 'hippie_csv'
-require 'awesome_print'
-require_relative 'dbconn'
+require 'csv'
+require 'pg'
+require 'sequel'
+require 'dotenv'
+require 'tempfile'
+require 'bigdecimal'
+require 'active_support/core_ext/object/blank'
 
-$conn = db_connection
+Dotenv.load
 
-BATCH_SIZE = 1000
-TABLE_NAME = 'apa_ziadosti_o_priame_podpory'.freeze
+DB = Sequel.connect(adapter: 'postgres', host: '138.68.66.142', database: 'rforjan', user: 'rforjan', password: ENV['PG_PASS'])
+DB_TABLE = DB[:apa_ziadosti_o_priame_podpory_diely]
+COLUMNS = DB_TABLE.columns - [:id]
 
-$conn.exec("DELETE from #{TABLE_NAME}")
-all_values = []
+path = 'data/apa_ziadosti_o_priame_podpory_2018-03-20.csv'
 
-def insert_batch(all_values)
-  placeholders = all_values.each_with_index.map { |batch, idx|
-    dollars = 1.upto(batch.size).map { |i| "$#{i + batch.size * idx}" }.join(',')
-    "(#{dollars})"
-  }.join(', ')
-  sql = "INSERT INTO #{TABLE_NAME}
-(url, ziadatel, ico, rok, ziadosti) VALUES #{placeholders}"
-  # puts sql
-  # puts all_values.flatten
-  $conn.exec_params(sql, all_values.flatten)
-end
 
-HippieCSV.read('data/apa_ziadosti_o_priame_podpory_2018-03-20.csv').each_with_index do |row, index|
-  if index == 0
-    $header = row
-  else
-    values = $header.zip(row).map do |field, value|
-      case field
-        when 'Rok'
-          value&.to_i
-        else
-          value
-      end
-    end
+puts "Cleaning up old data"
 
-    all_values << values
+DB_TABLE.truncate
 
-    if index % BATCH_SIZE == 0
-      insert_batch(all_values)
-      all_values = []
-      ap "Inserted #{index} records"
-    end
+
+puts "Ensuring correct encoding"
+
+fixed_encoding_file = Tempfile.new(['csv', '.csv'])
+IO.write(fixed_encoding_file.path, IO.read(path).encode('UTF-8', invalid: :replace, replace: ''))
+path = fixed_encoding_file.path
+
+
+puts "Importing"
+
+imported_count = 0
+
+CSV.foreach(path, col_sep: ';', quote_char: '"')
+  .lazy
+  .drop(1)
+  .map { |csv_line|
+    ico = row[2].rjust(8, '0').slice(-8..-1)
+
+    rok = Integer(csv_line[3])
+
+    normalized = csv_line.map(&:presence)
+    normalized[2] = ico
+    normalized[3] = rok
+    normalized
+  }
+  .each_slice(20_000) do |slice|
+    DB_TABLE.import(COLUMNS, slice)
+    imported_count += slice.size
+    puts "Imported #{imported_count} rows"
   end
-end
-
-insert_batch(all_values)
-
-$conn.exec("SELECT COUNT(*) as c from #{TABLE_NAME}") do |result|
-  ap "Total row count #{result.first['c']}"
-end
-
-
-

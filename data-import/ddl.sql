@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS apa_prijimatelia (
 -- DROP TABLE apa_ziadosti_o_priame_podpory;
 CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory (
   id                       SERIAL,
-  ziadatel                 TEXT,
   url                      TEXT,
+  ziadatel                 TEXT,
   ico                      TEXT,
   rok                      INTEGER,
   ziadosti                 TEXT
