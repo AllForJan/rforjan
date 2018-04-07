@@ -15,7 +15,8 @@ class DielController < ApplicationController
                 celkova_suma: ApaPrijimatelia.celkova_suma(ziadost.ziadatel, rok),
                 celkova_vymera: ApaZiadostiOPriamePodporyDiely.celkova_vymera(ziadost.ziadatel, rok),
                 pocet_dielov: ApaZiadostiOPriamePodporyDiely.pocet_dielov(ziadost.ziadatel, rok, ),
-                pocet_ziadosti: ApaZiadostiOPriamePodporyDiely.pocet_ziadosti(ziadost.ziadatel, rok)
+                pocet_ziadosti: ApaZiadostiOPriamePodporyDiely.pocet_ziadosti(ziadost.ziadatel, rok),
+                vymera_dielu: ziadost.vymera_dielu(rok),
             )
           end
       ]

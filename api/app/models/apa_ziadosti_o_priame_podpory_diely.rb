@@ -12,4 +12,9 @@ class ApaZiadostiOPriamePodporyDiely < ApplicationRecord
   def self.pocet_dielov(meno, rok)
     where(ziadatel_normalized: Normalizer.normalize_name(meno), rok: rok,).count('distinct(diel, lokalita)')
   end
+
+  def vymera_dielu(rok)
+    return unless rok == 2016
+    Parts_2016.select(:area).find_by(part: diel, location: lokalita)&.area
+  end
 end
