@@ -8,4 +8,8 @@ class ApaZiadostiOPriamePodporyDiely < ApplicationRecord
   def self.pocet_ziadosti(meno, rok)
     where(ziadatel_normalized: Normalizer.normalize_name(meno), rok: rok).count
   end
+
+  def self.pocet_dielov(meno, rok)
+    where(ziadatel_normalized: Normalizer.normalize_name(meno), rok: rok,).count('distinct(diel, lokalita)')
+  end
 end
