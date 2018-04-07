@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS crp_projekty (
 -- DROP TABLE crp_zmluvy;
 CREATE TABLE IF NOT EXISTS crp_zmluvy (
   id                       SERIAL,
+  crp_id                   TEXT,
   url                      TEXT,
   nazov                    TEXT,
   obstaravatel_nazov       TEXT,
