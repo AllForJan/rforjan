@@ -52,3 +52,21 @@ CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory_diely (
   kultura                  TEXT,
   vymera                   DECIMAL
 );
+
+-- DROP TABLE apa_ziadosti_projektove_podpory;
+CREATE TABLE IF NOT EXISTS crp_projekty (
+  id                       SERIAL,
+  url                      TEXT,
+  nazov                    TEXT,
+  datum_zverejnenia        TIMESTAMP,
+  datum_zacatia            TIMESTAMP,
+  datum_ukoncenia          TIMESTAMP,
+  prijimatel               TEXT,
+  ico_prijmatela           TEXT,
+  miesto_realizacie        TEXT,
+  poskytovatel             TEXT,
+  typ_poskytnutej_pomoci   TEXT,
+  crp_id                   TEXT,
+  vyska_pomoci             TEXT,
+  vyska_pomoci_num         DECIMAL
+);
