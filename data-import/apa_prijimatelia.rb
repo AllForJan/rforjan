@@ -4,6 +4,7 @@ require 'bigdecimal/util'
 require 'hippie_csv'
 require 'awesome_print'
 require_relative 'dbconn'
+require 'i18n'
 
 $conn = db_connection
 
@@ -13,6 +14,11 @@ TABLE_NAME = 'apa_prijimatelia'.freeze
 $conn.exec("DELETE from #{TABLE_NAME}")
 all_values = []
 
+def normalize_name(name)
+  I18n.config.available_locales = :en
+  I18n.transliterate(name).downcase.gsub(/[^\w]/,' ').split.compact.sort.uniq.join(' ')
+end
+
 def insert_batch(all_values)
   placeholders = all_values.each_with_index.map { |batch, idx|
     dollars = 1.upto(batch.size).map { |i| "$#{i + batch.size * idx}" }.join(',')
@@ -20,7 +26,7 @@ def insert_batch(all_values)
   }.join(', ')
 
   sql = "INSERT INTO #{TABLE_NAME}
-          (url, meno, psc, obec, opatrenie, opatrenie_kod, suma, rok)
+          (url, meno, psc, obec, opatrenie, opatrenie_kod, suma, rok, meno_normalized)
         VALUES #{placeholders}"
   $conn.exec_params(sql, all_values.flatten)
 end
@@ -39,6 +45,8 @@ HippieCSV.read('data/apa_prijimatelia_2018-03-15.csv').each_with_index do |row, 
           else value
         end
     end
+
+    values.append(normalize_name(row[1]))
 
     all_values << values
 

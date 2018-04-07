@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS apa_prijimatelia (
   opatrenie                TEXT,
   opatrenie_kod            TEXT,
   suma                     DECIMAL,
-  rok                      INTEGER
+  rok                      INTEGER,
+  meno_normalized          TEXT
 );
 
 -- DROP TABLE apa_ziadosti_o_priame_podpory;
