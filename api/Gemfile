@@ -11,6 +11,7 @@ gem 'rails', '~> 5.1.5'
 gem 'pg'
 # Use Puma as the app server
 gem 'puma', '~> 3.7'
+gem 'rack-cors', :require => 'rack/cors'
 
 gem 'dotenv-rails', require: 'dotenv/rails-now'
 
