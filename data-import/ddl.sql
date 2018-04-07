@@ -1,4 +1,4 @@
--- DROP TABLE apa_ziadosti_projektove_podpory;
+-- DROP TABLE apa_ziadosti_o_projektove_podpory;
 CREATE TABLE IF NOT EXISTS apa_ziadosti_o_projektove_podpory (
   id                       SERIAL,
   ziadatel                 TEXT,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS apa_prijimatelia (
   rok                      INTEGER
 );
 
--- DROP TABLE apa_ziadosti_projektove_podpory;
+-- DROP TABLE apa_ziadosti_o_priame_podpory;
 CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory (
   id                       SERIAL,
   ziadatel                 TEXT,
@@ -38,4 +38,17 @@ CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory (
   ico                      TEXT,
   rok                      INTEGER,
   ziadosti                 TEXT
+);
+
+-- DROP TABLE apa_ziadosti_o_priame_podpory_diely;
+CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory_diely (
+  id                       SERIAL,
+  url                      TEXT,
+  ziadatel                 TEXT,
+  ico                      TEXT,
+  rok                      INTEGER,
+  lokalita                 TEXT,
+  diel                     TEXT,
+  kultura                  TEXT,
+  vymera                   DECIMAL
 );
