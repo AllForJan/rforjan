@@ -36,4 +36,28 @@ class EntityController < ApplicationController
         end.to_h
     }
   end
+
+  def distances
+    params.require(:entity_ico)
+
+    ico = params[:entity_ico]
+    address = ApaPrijimatelia.get_address_for_ico(ico)
+
+    render json: { error: 'Adresa nenajdena' }, status: :not_found and return unless ico
+
+    diely = ApaZiadostiOPriamePodporyDiely.vzdialenosti(ico, address['point'],2016).collect do |diel|
+      {
+          lokalita: diel['lokalita'],
+          diel: diel['diel'],
+          kultura: diel['kultura'],
+          vymera: diel['vymera'],
+          vzdialenost: diel['distance']
+      }
+    end
+
+    render json: {
+        adresa: address,
+        diely: diely
+    }
+  end
 end

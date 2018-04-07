@@ -162,3 +162,16 @@ CREATE TABLE IF NOT EXISTS finstat (
   aktiva_2009              decimal,
   zamestnanci_2009         TEXT
 );
+
+CREATE TABLE slovakia_addresses (
+  id                  SERIAL,
+  street              TEXT,
+  number              TEXT,
+  unit                TEXT,
+  city                TEXT,
+  district            TEXT,
+  region              TEXT,
+  postcode            TEXT,
+  hash                TEXT,
+  location            GEOGRAPHY(POINT)
+);
