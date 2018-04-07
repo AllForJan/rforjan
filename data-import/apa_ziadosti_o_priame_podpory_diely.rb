@@ -38,7 +38,7 @@ CSV.foreach(path, col_sep: ';', quote_char: '"')
   .lazy
   .drop(1)
   .map { |csv_line|
-    ico = csv_line[2]&.rjust(8, '0').slice(-8..-1)
+    ico = csv_line[2]&.rjust(8, '0')&.slice(-8..-1)
 
     rok = Integer(csv_line[3])
 

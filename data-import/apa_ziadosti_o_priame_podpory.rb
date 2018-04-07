@@ -9,7 +9,7 @@ require 'active_support/core_ext/object/blank'
 Dotenv.load
 
 DB = Sequel.connect(adapter: 'postgres', host: '138.68.66.142', database: 'rforjan', user: 'rforjan', password: ENV['PG_PASS'])
-DB_TABLE = DB[:apa_ziadosti_o_priame_podpory_diely]
+DB_TABLE = DB[:apa_ziadosti_o_priame_podpory]
 COLUMNS = DB_TABLE.columns - [:id]
 
 path = 'data/apa_ziadosti_o_priame_podpory_2018-03-20.csv'
@@ -35,7 +35,7 @@ CSV.foreach(path, col_sep: ';', quote_char: '"')
   .lazy
   .drop(1)
   .map { |csv_line|
-    ico = csv_line[2]&.rjust(8, '0').slice(-8..-1)
+    ico = csv_line[2]&.rjust(8, '0')&.slice(-8..-1)
 
     rok = Integer(csv_line[3])
 
