@@ -38,14 +38,14 @@ CSV.foreach(path, col_sep: ';', quote_char: '"')
   .lazy
   .drop(1)
   .map { |csv_line|
-    ico = row[2].rjust(8, '0').slice(-8..-1)
+    ico = csv_line[2].rjust(8, '0').slice(-8..-1)
 
     rok = Integer(csv_line[3])
 
     /^(\d+(\.\d+)?) ha$/.match(csv_line[7])
     vymera = BigDecimal($1)
 
-    ziadatel_normalized = I18n.transliterate(row[1]).downcase.gsub(/[^\w]/, ' ').split.compact.sort.uniq.join(' ')
+    ziadatel_normalized = I18n.transliterate(csv_line[1]).downcase.gsub(/[^\w]/, ' ').split.compact.sort.uniq.join(' ')
 
     normalized = csv_line.map(&:presence)
     normalized[2] = ico
