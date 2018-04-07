@@ -5,14 +5,9 @@ require 'dotenv'
 require 'tempfile'
 require 'bigdecimal'
 require 'active_support/core_ext/object/blank'
-
 require 'i18n'
 
 I18n.config.available_locales = :en
-
-def normalize_name(name)
-  I18n.transliterate(name).downcase.gsub(/[^\w]/,' ').split.compact.sort.uniq.join(' ')
-end
 
 Dotenv.load
 
@@ -43,15 +38,20 @@ CSV.foreach(path, col_sep: ';', quote_char: '"')
   .lazy
   .drop(1)
   .map { |csv_line|
+    ico = row[2].rjust(8, '0').slice(-8..-1)
+
     rok = Integer(csv_line[3])
 
     /^(\d+(\.\d+)?) ha$/.match(csv_line[7])
     vymera = BigDecimal($1)
 
+    ziadatel_normalized = I18n.transliterate(row[1]).downcase.gsub(/[^\w]/, ' ').split.compact.sort.uniq.join(' ')
+
     normalized = csv_line.map(&:presence)
+    normalized[2] = ico
     normalized[3] = rok
     normalized[7] = vymera
-    normalized << normalize_name(normalized[1])
+    normalized << ziadatel_normalized
     normalized
   }
   .each_slice(20_000) do |slice|
