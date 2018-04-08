@@ -75,7 +75,7 @@ def getOwners(id, parcel_type):
     try:
         return r.json()
     except:
-        return {}
+        return None
 
 
 from flask import Flask, request, jsonify
