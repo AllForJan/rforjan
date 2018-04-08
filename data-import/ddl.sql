@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS prijimatelia_finstat (
   finstat_id           INTEGER REFERENCES finstat (id)
 );
 
--- DROP TABLE prijimatelia_ziadosti_o_priame_podpory;
+-- DROP TABLE prijimatelia_ziadosti;
 CREATE TABLE IF NOT EXISTS prijimatelia_ziadosti (
   id                  SERIAL PRIMARY KEY,
   prijimatelia_id     INTEGER REFERENCES apa_prijimatelia (id),
