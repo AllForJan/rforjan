@@ -74,6 +74,7 @@ def getOwners(id, parcel_type):
     try:
         return r.json()
     except:
+        print(f"Failed to fetch participant {r}")
         return None
 
 
