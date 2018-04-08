@@ -6,6 +6,7 @@ from shapely import wkb
 import psycopg2
 import os
 import redis
+import functools
 from flask_cors import CORS
 
 
@@ -14,6 +15,9 @@ redis_connection = redis.StrictRedis(host='localhost', port=6379, db=0)
 def redis_fetch_or_execute(key, executable):
     prefixed_key = f"{REDIS_CACHE_VERSION}-{key}"
     val = redis_connection.get(prefixed_key)
+    if val:
+        print(val)
+        val = json.loads(val.decode('utf-8').replace("'", '"'))
     if not val:
         val = executable()
         redis_connection.set(prefixed_key, val)
@@ -66,9 +70,65 @@ def xyToLatLong(x, y, i=0):
         a3 = o/2 - 2*np.arctan(np.exp(-1*y/a))
         return [a3*n, a2]
 
+def getOwners(id):
+    url = "https://kataster.skgeodesy.sk/PortalOData/ParcelsC(" + id + ")/Kn.Participants"
+    r = requests.get(url)
+    return r.json()
+
+
 from flask import Flask, request, jsonify
 app = Flask(__name__)
 CORS(app)
+
+
+def get_result(location, part):
+    print("getting parcels")
+    # get and transform coordinates
+    coords = getPartCoords(location, part)
+    transformed_coords = [latLongToXY(a[1], a[0]) for a in coords]
+
+    # create and simplify polygon
+    diel = Polygon(transformed_coords)
+    diel_area = diel.area
+    simple_diel = simplifyPolygon(diel)
+    x, y = simple_diel.exterior.xy
+
+    # API call
+    xmin = min(x) - 50
+    xmax = max(x) + 50
+    ymin = min(y) - 20
+    ymax = max(y) + 20
+    mapStr = "mapExtent=" + str(xmin) + "," + str(ymin) + "," + str(xmax) + "," + str(ymax)
+    coordStr = str(list(zip(x, y))).replace(" ", "").replace("(", "[").replace(")", "]")
+    url = "https://kataster.skgeodesy.sk/eskn/rest/services/VRM/identify/MapServer/identify?f=json&tolerance=0&returnGeometry=true&imageDisplay=1280,800,96&geometry={\"rings\":[" + coordStr + "]}&geometryType=esriGeometryPolygon&sr=102100&" + mapStr + "&layers=visible:1"
+
+    r = requests.get(url)
+    out = r.json()
+
+    parcel_c = [{'id': parcel['attributes']['ID'], 'parcel_number': parcel['attributes']['PARCEL_NUMBER'],
+                 'shape': parcel['geometry']['rings'][0],
+                 'latLonShape': [xyToLatLong(p[0], p[1]) for p in parcel['geometry']['rings'][0]]} for parcel in
+                out['results'] if parcel['layerId'] == 1]
+
+    output = []
+
+    for p in parcel_c:
+        shape = Polygon(p['shape'])
+        intersect_area = shape.intersection(diel).area
+        iarea = intersect_area / diel_area * 100
+        if iarea > 5:
+            p['owners'] = getOwners(p['id'])
+        if iarea > 1:
+            p['intersect'] = iarea
+            output.append(p)
+
+    return output
+
+
+def get_result_cached(location, part):
+    key = f"{location}_{part}"
+    return redis_fetch_or_execute(key, functools.partial(get_result, location=location, part=part))
+
 
 @app.route('/parcels')
 def parcels():
@@ -78,39 +138,4 @@ def parcels():
     location = request.args.get('lokalita')
     part = request.args.get('diel')
 
-    # get and transform coordinates
-    coords = getPartCoords(location, part)
-    transformed_coords = [latLongToXY(a[1], a[0]) for a in coords]
-
-    # create and simplify polygon
-    diel = Polygon(transformed_coords)
-    diel_area = diel.area
-    simple_diel = simplifyPolygon(diel)
-    x,y = simple_diel.exterior.xy
-
-    # API call
-    xmin = min(x) - 50
-    xmax = max(x) + 50
-    ymin = min(y) - 20
-    ymax = max(y) + 20
-    mapStr = "mapExtent="+str(xmin)+","+str(ymin)+","+str(xmax)+","+str(ymax)
-    coordStr = str(list(zip(x,y))).replace(" ","").replace("(","[").replace(")","]")
-    url = "https://kataster.skgeodesy.sk/eskn/rest/services/VRM/identify/MapServer/identify?f=json&tolerance=0&returnGeometry=true&imageDisplay=1280,800,96&geometry={\"rings\":["+coordStr+"]}&geometryType=esriGeometryPolygon&sr=102100&"+mapStr+"&layers=visible:1"
-
-    r = requests.get(url)
-    out = r.json()
-
-    parcel_c = [{'id':parcel['attributes']['ID'], 'parcel_number':parcel['attributes']['PARCEL_NUMBER'], 'shape': parcel['geometry']['rings'][0], 'latLonShape':[ xyToLatLong(p[0], p[1]) for p in parcel['geometry']['rings'][0]] } for parcel in out['results'] if parcel['layerId'] == 1]
-
-    output = []
-
-    for p in parcel_c:
-        shape = Polygon(p['shape'])
-        intersect_area = shape.intersection(diel).area
-        iarea = intersect_area/diel_area*100
-        if iarea > 1:
-            p['intersect'] = iarea
-            output.append(p)
-
-    return jsonify(output)
-
+    return jsonify(get_result(location, part))

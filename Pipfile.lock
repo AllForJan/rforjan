@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f49b41ccc61c993342ccb9f839f245e380b4958e3c51e790c0a5608322fff374"
+            "sha256": "63a5820ec85abd044edfacb96b4c8d8eaa602482a5ed0500a3a65023cf5c1e64"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -99,6 +99,14 @@
                 "sha256:49f44461237b69ecd901cc7ce66feea0319b9158743dd27a2899962ab214dac1"
             ],
             "version": "==0.12.2"
+        },
+        "flask-cors": {
+            "hashes": [
+                "sha256:55eb3864b4290f939ff19a2250fcb47d8c0f63d250c6780b922629299d011ec8",
+                "sha256:ac4b81b3d90f5f18714c995c807f94501df8c9bbc22ef4261c1cd850748c3850",
+                "sha256:62ebc5ad80dc21ca0ea9f57466c2c74e24a62274af890b391790c260eb7b754b"
+            ],
+            "version": "==3.0.3"
         },
         "html5lib": {
             "hashes": [
@@ -412,6 +420,7 @@
                 "sha256:e8c43b5eee76b2083a9badde89fd1bbce6c8942d1045146e100b7b5e014f4f1a",
                 "sha256:e64193f0047ad603b71f202332ab5527c5e52aa7c8b609704fc28c0dc20c4365"
             ],
+            "markers": "os_name != 'nt'",
             "version": "==0.5.2"
         },
         "pygments": {

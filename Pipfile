@@ -19,6 +19,7 @@ pandas-profiling = "*"
 requests = "*"
 shapely = "*"
 flask = "*"
+flask-cors = "*"
 redis = "*"
 
 
