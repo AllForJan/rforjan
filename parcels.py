@@ -70,8 +70,8 @@ def xyToLatLong(x, y, i=0):
         a3 = o/2 - 2*np.arctan(np.exp(-1*y/a))
         return [a3*n, a2]
 
-def getOwners(id):
-    url = "https://kataster.skgeodesy.sk/PortalOData/ParcelsC(" + id + ")/Kn.Participants"
+def getOwners(id, parcel_type):
+    url = "https://kataster.skgeodesy.sk/PortalOData/Parcels" + parcel_type + "(" + id + ")/Kn.Participants"
     r = requests.get(url)
     return r.json()
 
@@ -105,19 +105,27 @@ def get_result(location, part):
     r = requests.get(url)
     out = r.json()
 
-    parcel_c = [{'id': parcel['attributes']['ID'], 'parcel_number': parcel['attributes']['PARCEL_NUMBER'],
-                 'shape': parcel['geometry']['rings'][0],
-                 'latLonShape': [xyToLatLong(p[0], p[1]) for p in parcel['geometry']['rings'][0]]} for parcel in
-                out['results'] if parcel['layerId'] == 1]
+    parcels = [
+                {
+                    'type': 'C' if parcel['layerId'] == 1 else 'E', 
+                    'id': parcel['attributes']['ID'], 
+                    'parcel_number': parcel['attributes']['PARCEL_NUMBER'],
+                    'shape': parcel['geometry']['rings'][0],
+                    'latLonShape': [
+                        xyToLatLong(p[0], p[1]) for p in parcel['geometry']['rings'][0]
+                    ]
+                } 
+                for parcel in out['results']
+              ]
 
     output = []
 
-    for p in parcel_c:
+    for p in parcels:
         shape = Polygon(p['shape'])
         intersect_area = shape.intersection(diel).area
         iarea = intersect_area / diel_area * 100
         if iarea > 5:
-            p['owners'] = getOwners(p['id'])
+            p['owners'] = getOwners(p['id'], p['type'])
         if iarea > 1:
             p['intersect'] = iarea
             output.append(p)
