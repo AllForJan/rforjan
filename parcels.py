@@ -72,7 +72,10 @@ def xyToLatLong(x, y, i=0):
 def getOwners(id, parcel_type):
     url = "https://kataster.skgeodesy.sk/PortalOData/Parcels" + parcel_type + "(" + id + ")/Kn.Participants"
     r = requests.get(url)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return {}
 
 
 from flask import Flask, request, jsonify
