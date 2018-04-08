@@ -11,7 +11,7 @@ class EntityController < ApplicationController
       join prijimatelia_finstat 
         on prijimatelia_finstat.prijimatelia_id = apa_prijimatelia.id
       join finstat
-        on finstat.id = prijimatelia_finstat.id
+        on finstat.id = prijimatelia_finstat.finstat_id
     SQL
       .where(finstat: { ico: icos }).pluck(:id, :ico).to_h
 
