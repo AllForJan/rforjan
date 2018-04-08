@@ -21,7 +21,7 @@ class ApaZiadostiOPriamePodporyDiely < ApplicationRecord
   def self.vzdialenosti(ico, location, rok)
     return unless rok == 2016
     ActiveRecord::Base.connection.raw_connection.exec_params(
-        'SELECT *,
+        'SELECT *, ST_AsGeoJSON(parts_2016.geom) as diel_geometria,
            ST_Distance(st_centroid(parts_2016.geom), ST_GeographyFromText($1)) as distance
         FROM apa_ziadosti_o_priame_podpory_diely
         LEFT JOIN parts_2016 ON parts_2016.location = apa_ziadosti_o_priame_podpory_diely.lokalita AND parts_2016.part = apa_ziadosti_o_priame_podpory_diely.diel

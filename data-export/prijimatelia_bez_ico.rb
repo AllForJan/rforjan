@@ -14,6 +14,7 @@ sql = <<~SQL
   WHERE z.ico IS NULL
 SQL
 
+# Retazce cislic miesto mena: pod nejakú hranicu (myslím 1000 Eur) sú prijímatelia anonymizovaní týmto spůsobom
 rows = DB.fetch(sql).all.uniq { |row| row[:meno] }.select { |row| /[[:alpha:]]/ =~ row[:meno] }
 
 CSV.open('data/prijimatelia_bez_ico.csv', 'w') do |csv|

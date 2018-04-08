@@ -43,7 +43,9 @@ class EntityController < ApplicationController
     ico = params[:entity_ico]
     address = ApaPrijimatelia.get_address_for_ico(ico)
 
-    render json: { error: 'Adresa nenajdena' }, status: :not_found and return unless ico
+    address['point_json'] = JSON.parse(address['point_json'])
+
+    render json: { error: 'Adresa nenajdena' }, status: :not_found and return unless address
 
     diely = ApaZiadostiOPriamePodporyDiely.vzdialenosti(ico, address['point'],2016).collect do |diel|
       {
@@ -51,7 +53,8 @@ class EntityController < ApplicationController
           diel: diel['diel'],
           kultura: diel['kultura'],
           vymera: diel['vymera'],
-          vzdialenost: diel['distance']
+          vzdialenost: diel['distance'],
+          geometria: JSON.parse(diel['diel_geometria'])
       }
     end
 

@@ -17,7 +17,7 @@ path = 'data/apa_ziadosti_o_priame_podpory_2018-03-20.csv'
 
 puts "Cleaning up old data"
 
-DB_TABLE.truncate
+DB_TABLE.truncate(cascade: true)
 
 
 puts "Ensuring correct encoding"
@@ -31,18 +31,12 @@ puts "Importing"
 
 imported_count = 0
 
-CSV.foreach(path, col_sep: ';', quote_char: '"')
+CSV.foreach(path, col_sep: ';', quote_char: '"', headers: true)
   .lazy
-  .drop(1)
-  .map { |csv_line|
-    ico = csv_line[2]&.rjust(8, '0')&.slice(-8..-1)
-
-    rok = Integer(csv_line[3])
-
-    normalized = csv_line.map(&:presence)
-    normalized[2] = ico
-    normalized[3] = rok
-    normalized
+  .map { |csv_row|
+    csv_row['ICO'] = csv_row['ICO']&.rjust(8, '0')&.slice(-8..-1)
+    csv_row['Rok'] = Integer(csv_row['Rok'])
+    csv_row.fields
   }
   .each_slice(20_000) do |slice|
     DB_TABLE.import(COLUMNS, slice)

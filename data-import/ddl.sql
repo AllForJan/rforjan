@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS apa_ziadosti_o_projektove_podpory (
 
 -- DROP TABLE apa_prijimatelia;
 CREATE TABLE IF NOT EXISTS apa_prijimatelia (
-  id                       SERIAL,
+  id                       SERIAL PRIMARY KEY,
   url                      TEXT,
   meno                     TEXT,
   psc                      TEXT,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS apa_prijimatelia (
 
 -- DROP TABLE apa_ziadosti_o_priame_podpory;
 CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory (
-  id                       SERIAL,
+  id                       SERIAL PRIMARY KEY,
   url                      TEXT,
   ziadatel                 TEXT,
   ico                      TEXT,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory (
 
 -- DROP TABLE apa_ziadosti_o_priame_podpory_diely;
 CREATE TABLE IF NOT EXISTS apa_ziadosti_o_priame_podpory_diely (
-  id                       SERIAL,
+  id                       SERIAL PRIMARY KEY,
   url                      TEXT,
   ziadatel                 TEXT,
   ico                      TEXT,
@@ -99,9 +99,8 @@ CREATE TABLE IF NOT EXISTS crp_zmluvy (
   stav                     TEXT
 );
 
-
 CREATE TABLE IF NOT EXISTS finstat (
-  id                       SERIAL,
+  id                       SERIAL PRIMARY KEY,
   ico                      TEXT,
   nazov                    TEXT,
   hlavna_cinnost           TEXT,
@@ -174,4 +173,18 @@ CREATE TABLE slovakia_addresses (
   postcode            TEXT,
   hash                TEXT,
   location            GEOGRAPHY(POINT)
+);
+
+-- DROP TABLE prijimatelia_finstat;
+CREATE TABLE IF NOT EXISTS prijimatelia_finstat (
+  id                   SERIAL PRIMARY KEY,
+  prijimatelia_id      INTEGER REFERENCES apa_prijimatelia (id),
+  finstat_id           INTEGER REFERENCES finstat (id)
+);
+
+-- DROP TABLE prijimatelia_ziadosti;
+CREATE TABLE IF NOT EXISTS prijimatelia_ziadosti (
+  id                  SERIAL PRIMARY KEY,
+  prijimatelia_id     INTEGER REFERENCES apa_prijimatelia (id),
+  ziadosti_id         INTEGER REFERENCES apa_ziadosti_o_priame_podpory_diely (id)
 );

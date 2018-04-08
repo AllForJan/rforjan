@@ -6,46 +6,73 @@ require 'tempfile'
 require 'bigdecimal'
 require 'active_support/core_ext/object/blank'
 
+def normalize_csv_row(csv_row)
+  csv_row['Dlhy'] = csv_row['Dlhy'] == 'áno'
+
+  years = 2017.downto(2009)
+  decimal_columns = years.flat_map { |y| ["#{y} Trzby", "#{y} Trzby+vynosy", "#{y} Zisk", "#{y} Aktiva"] }
+  decimal_columns.each do |col|
+    csv_row[col] = BigDecimal(csv_row[col]) if csv_row[col]
+  end
+
+  csv_row.values_at(
+    'Ico', 'Nazov', 'Hlavna cinnost', 'SK Nace', 'Dátum vzniku', 'Dátum zániku',
+    'Dlhy', 'Zamestnanci', 'Zamestnanci - presny pocet',
+    'Adresa', 'Mesto', 'Okres', 'Kraj', 'Štatutári',
+    '2017 Trzby', '2017 Trzby+vynosy', '2017 Zisk', '2017 Aktiva', '2017 Zamestnanci',
+    '2016 Trzby', '2016 Trzby+vynosy', '2016 Zisk', '2016 Aktiva', '2016 Zamestnanci',
+    '2015 Trzby', '2015 Trzby+vynosy', '2015 Zisk', '2015 Aktiva', '2015 Zamestnanci',
+    '2014 Trzby', '2014 Trzby+vynosy', '2014 Zisk', '2014 Aktiva', '2014 Zamestnanci',
+    '2013 Trzby', '2013 Trzby+vynosy', '2013 Zisk', '2013 Aktiva', '2013 Zamestnanci',
+    '2012 Trzby', '2012 Trzby+vynosy', '2012 Zisk', '2012 Aktiva', '2012 Zamestnanci',
+    '2011 Trzby', '2011 Trzby+vynosy', '2011 Zisk', '2011 Aktiva', '2011 Zamestnanci',
+    '2010 Trzby', '2010 Trzby+vynosy', '2010 Zisk', '2010 Aktiva', '2010 Zamestnanci',
+    '2009 Trzby', '2009 Trzby+vynosy', '2009 Zisk', '2009 Aktiva', '2009 Zamestnanci'
+  )
+end
+
+
 Dotenv.load
 
 DB = Sequel.connect(adapter: 'postgres', host: '138.68.66.142', database: 'rforjan', user: 'rforjan', password: ENV['PG_PASS'])
 DB_TABLE = DB[:finstat]
 COLUMNS = DB_TABLE.columns - [:id]
 
-path = 'data/finstat.csv'
-
 
 puts "Cleaning up old data"
 
-DB_TABLE.truncate
+DB_TABLE.truncate(cascade: true)
 
-
-puts "Importing"
 
 imported_count = 0
 
-CSV.foreach(path, col_sep: ';', quote_char: '"')
+puts 'Importing finstat.csv'
+
+CSV.foreach('data/finstat.csv', col_sep: ';', quote_char: '"', headers: true)
   .lazy
-  .drop(1)
-  .select { |csv_line| csv_line[1].present? }
-  .map { |csv_line|
-    normalized = csv_line.map(&:presence)
-
-    dlhy_col_idx = COLUMNS.index(:dlhy)
-    normalized[dlhy_col_idx] = csv_line[dlhy_col_idx] == 'áno'
-
-    years = 2017.downto(2009)
-    decimal_columns = years.flat_map { |y| [:"trzby_#{y}", :"trzby_vynosy_#{y}", :"zisk_#{y}", :"aktiva_#{y}"] }
-
-    decimal_columns.each do |column_name|
-      col_idx = COLUMNS.index(column_name)
-      normalized[col_idx] = BigDecimal(csv_line[col_idx]) if csv_line[col_idx]
-    end
-
-    normalized
-  }
+  .select { |csv_row| csv_row['Nazov'].present? }
+  .uniq { |csv_row| csv_row['Ico'] }
+  .map { |csv_row| normalize_csv_row(csv_row) }
   .each_slice(20_000) do |slice|
     DB_TABLE.import(COLUMNS, slice)
     imported_count += slice.size
     puts "Imported #{imported_count} rows"
   end
+
+
+puts 'Importing prijimatelia_bez_ico_finstat.csv'
+
+finstat_icos = DB_TABLE.map(:ico)
+
+CSV.foreach('data/prijimatelia_bez_ico_finstat.csv', col_sep: ';', quote_char: '"', headers: true)
+  .lazy
+  .select { |csv_row| csv_row['Nazov'].present? }
+  .uniq { |csv_row| csv_row['Ico'] }
+  .reject { |csv_row| finstat_icos.include? csv_row['Ico'] }
+  .map { |csv_row| normalize_csv_row(csv_row) }
+  .each_slice(20_000) do |slice|
+    DB_TABLE.import(COLUMNS, slice)
+    imported_count += slice.size
+    puts "Imported #{imported_count} rows"
+  end
+

@@ -8,7 +8,7 @@ class ApaPrijimatelia < ApplicationRecord
                  .connection
                  .raw_connection
                  .exec_params(
-                     'select nazov, adresa, mesto, ST_AsText(location) as point from finstat
+                     'select nazov, adresa, mesto, ST_AsText(location) as point, ST_AsGeoJSON(location) as point_json from finstat
                       LEFT JOIN slovakia_addresses ON
                         slovakia_addresses.city = finstat.mesto
                         AND finstat.adresa ILIKE CONCAT(slovakia_addresses.street, \'%\')

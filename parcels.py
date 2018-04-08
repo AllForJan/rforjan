@@ -6,6 +6,7 @@ from shapely import wkb
 import psycopg2
 import os
 import redis
+from flask_cors import CORS
 
 
 REDIS_CACHE_VERSION = '1'
@@ -52,9 +53,22 @@ def simplifyPolygon(p, vertTresh=30, tolInc=5):
         vertCount = len(x)
     return(p)
 
+def xyToLatLong(x, y, i=0):
+    a = 6378137
+    n = 57.29577951308232
+    o = 3.141592653589793
+    lat = x / a * n
+    if i:
+        a1 = o/2 - 2*np.arctan(np.exp(-1*y/a))
+        return(lat, a1*n)
+    else:
+        a2 = lat - 360 * np.floor((lat+180)/360)
+        a3 = o/2 - 2*np.arctan(np.exp(-1*y/a))
+        return [a3*n, a2]
 
 from flask import Flask, request, jsonify
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/parcels')
 def parcels():
@@ -70,6 +84,7 @@ def parcels():
 
     # create and simplify polygon
     diel = Polygon(transformed_coords)
+    diel_area = diel.area
     simple_diel = simplifyPolygon(diel)
     x,y = simple_diel.exterior.xy
 
@@ -81,5 +96,21 @@ def parcels():
     mapStr = "mapExtent="+str(xmin)+","+str(ymin)+","+str(xmax)+","+str(ymax)
     coordStr = str(list(zip(x,y))).replace(" ","").replace("(","[").replace(")","]")
     url = "https://kataster.skgeodesy.sk/eskn/rest/services/VRM/identify/MapServer/identify?f=json&tolerance=0&returnGeometry=true&imageDisplay=1280,800,96&geometry={\"rings\":["+coordStr+"]}&geometryType=esriGeometryPolygon&sr=102100&"+mapStr+"&layers=visible:1"
-    return jsonify(requests.get(url).json())
+
+    r = requests.get(url)
+    out = r.json()
+
+    parcel_c = [{'id':parcel['attributes']['ID'], 'parcel_number':parcel['attributes']['PARCEL_NUMBER'], 'shape': parcel['geometry']['rings'][0], 'latLonShape':[ xyToLatLong(p[0], p[1]) for p in parcel['geometry']['rings'][0]] } for parcel in out['results'] if parcel['layerId'] == 1]
+
+    output = []
+
+    for p in parcel_c:
+        shape = Polygon(p['shape'])
+        intersect_area = shape.intersection(diel).area
+        iarea = intersect_area/diel_area*100
+        if iarea > 1:
+            p['intersect'] = iarea
+            output.append(p)
+
+    return jsonify(output)
 
