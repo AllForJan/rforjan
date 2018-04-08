@@ -10,7 +10,7 @@ import functools
 from flask_cors import CORS
 
 
-REDIS_CACHE_VERSION = '1'
+REDIS_CACHE_VERSION = '2'
 redis_connection = redis.StrictRedis(host='localhost', port=6379, db=0)
 def redis_fetch_or_execute(key, executable):
     prefixed_key = f"{REDIS_CACHE_VERSION}-{key}"
@@ -102,7 +102,7 @@ def get_result(location, part):
     ymax = max(y) + 20
     mapStr = "mapExtent=" + str(xmin) + "," + str(ymin) + "," + str(xmax) + "," + str(ymax)
     coordStr = str(list(zip(x, y))).replace(" ", "").replace("(", "[").replace(")", "]")
-    url = "https://kataster.skgeodesy.sk/eskn/rest/services/VRM/identify/MapServer/identify?f=json&tolerance=0&returnGeometry=true&imageDisplay=1280,800,96&geometry={\"rings\":[" + coordStr + "]}&geometryType=esriGeometryPolygon&sr=102100&" + mapStr + "&layers=visible:1"
+    url = "https://kataster.skgeodesy.sk/eskn/rest/services/VRM/identify/MapServer/identify?f=json&tolerance=0&returnGeometry=true&imageDisplay=1280,800,96&geometry={\"rings\":[" + coordStr + "]}&geometryType=esriGeometryPolygon&sr=102100&" + mapStr + "&layers=visible:1,2"
 
     r = requests.get(url)
     out = r.json()
