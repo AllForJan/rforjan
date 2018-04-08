@@ -147,4 +147,4 @@ def parcels():
     location = request.args.get('lokalita')
     part = request.args.get('diel')
 
-    return jsonify(get_result(location, part))
+    return jsonify(get_result_cached(location, part))
