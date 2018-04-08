@@ -81,4 +81,29 @@ class EntityController < ApplicationController
         diely: diely
     }
   end
+
+  def distances_stats
+    cache_path = "#{Rails.root}/tmp/prijimatelia_stats"
+
+    stats = if !File.exist?(cache_path) || File.empty?(cache_path) || params[:reload]
+              data = ApaPrijimatelia.get_distance_stats.collect do |row|
+                {
+                    meno_normalized: row['meno_normalized'],
+                    average_distance: row['average_distance'],
+                    max_distance: row['max_distance'],
+                    position: JSON.parse(row['location'])
+                }
+              end
+
+              File.open(cache_path,"w") { |f| f.write(data.to_json) }
+
+              data
+            else
+              JSON.parse(File.read(cache_path))
+            end
+
+    render json: {
+        stats: stats
+    }
+  end
 end
