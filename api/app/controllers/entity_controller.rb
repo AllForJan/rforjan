@@ -2,18 +2,34 @@ class EntityController < ApplicationController
   def info
     params.require(:entity_id)
 
-    prijimatel = ApaPrijimatelia.where(meno_normalized: params[:entity_id])
-    ziadosti = ApaZiadostiOPriamePodporyDiely.where(ziadatel_normalized: params[:entity_id])
+    ziadosti = ApaZiadostiOPriamePodporyDiely.where(ziadatel_normalized: params[:entity_id]).to_a
+    icos = ziadosti.map(&:ico).compact.uniq
+
+    prijimatel_through_meno = ApaPrijimatelia.where(meno_normalized: params[:entity_id]).to_a
+
+    prijimatel_ico_map = ApaPrijimatelia.joins(<<-SQL)
+      join prijimatelia_finstat 
+        on prijimatelia_finstat.prijimatelia_id = apa_prijimatelia.id
+      join finstat
+        on finstat.id = prijimatelia_finstat.id
+    SQL
+      .where(finstat: { ico: icos }).pluck(:id, :ico).to_h
+
+    prijimatel_through_ico = ApaPrijimatelia.where(id: prijimatel_ico_map.keys).to_a
+
+    prijimatel = (prijimatel_through_meno + prijimatel_through_ico).uniq(&:id)
 
     render json: {
         ziadosti: ziadosti.group_by(&:rok).map do |rok, ziadosti_rok|
           [
               rok,
-              ziadosti_rok.group_by { |z| [z.lokalita, z.diel, z.kultura] }.map do |key, ziadosti_diel_kultura|
+              ziadosti_rok.group_by { |z| [z.ziadatel, z.ico, z.lokalita, z.diel, z.kultura] }.map do |key, ziadosti_diel_kultura|
                 {
-                    lokalita: key[0],
-                    diel: key[1],
-                    kultura: key[2],
+                    ziadatel: key[0],
+                    ico: key[1],
+                    lokalita: key[2],
+                    diel: key[3],
+                    kultura: key[4],
                     pocet_ziadosti: ziadosti_diel_kultura.size,
                     vymera_ziadosti: ziadosti_diel_kultura.sum(&:vymera)
                 }
@@ -23,11 +39,13 @@ class EntityController < ApplicationController
         prijimatel: prijimatel.group_by(&:rok).map do |rok, prijimatel_rok|
           [
               rok,
-              prijimatel_rok.group_by { |p| [p.psc, p.obec, p.opatrenie] }.map do |key, prijimatel_obec_opatrenie|
+              prijimatel_rok.group_by { |p| [p.meno, prijimatel_ico_map[p.id], p.psc, p.obec, p.opatrenie] }.map do |key, prijimatel_obec_opatrenie|
                 {
-                    psc: key[0],
-                    obec: key[1],
-                    opatrenie: key[2],
+                    ziadatel: key[0],
+                    ico: key[1],
+                    psc: key[2],
+                    obec: key[3],
+                    opatrenie: key[4],
                     pocet_prijmov: prijimatel_obec_opatrenie.size,
                     suma_prijmov: prijimatel_obec_opatrenie.sum(&:suma)
                 }
