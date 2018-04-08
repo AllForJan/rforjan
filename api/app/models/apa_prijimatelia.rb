@@ -1,4 +1,7 @@
 class ApaPrijimatelia < ApplicationRecord
+  has_many :prijimatelia_finstat, foreign_key: 'prijimatelia_id', class_name: 'PrijimateliaFinstat'
+  has_many :finstat, through: :prijimatelia_finstat
+
   def self.celkova_suma(meno, rok)
       where(meno_normalized: Normalizer.normalize_name(meno), rok: rok).sum(:suma)
   end

@@ -6,18 +6,11 @@ class EntityController < ApplicationController
     icos = ziadosti.map(&:ico).compact.uniq
 
     prijimatel_through_meno = ApaPrijimatelia.where(meno_normalized: params[:entity_id]).to_a
-
-    prijimatel_ico_map = ApaPrijimatelia.joins(<<-SQL)
-      join prijimatelia_finstat 
-        on prijimatelia_finstat.prijimatelia_id = apa_prijimatelia.id
-      join finstat
-        on finstat.id = prijimatelia_finstat.finstat_id
-    SQL
-      .where(finstat: { ico: icos }).pluck(:id, :ico).to_h
-
-    prijimatel_through_ico = ApaPrijimatelia.where(id: prijimatel_ico_map.keys).to_a
-
+    prijimatel_through_ico = ApaPrijimatelia.where(id: ApaPrijimatelia.joins(:finstat).merge(Finstat.where(ico: icos)).select(:id)).to_a
     prijimatel = (prijimatel_through_meno + prijimatel_through_ico).uniq(&:id)
+
+    ico_by_prijimatel_id = PrijimateliaFinstat.where(prijimatelia_id: prijimatel.map(&:id)).joins(:finstat).pluck('prijimatelia_id, ico').to_h
+    ico_by_ziadatel_normalized = ziadosti.map { |ziadost| [ziadost.ziadatel_normalized, ziadost.ico] }.to_h
 
     render json: {
         ziadosti: ziadosti.group_by(&:rok).map do |rok, ziadosti_rok|
@@ -39,7 +32,7 @@ class EntityController < ApplicationController
         prijimatel: prijimatel.group_by(&:rok).map do |rok, prijimatel_rok|
           [
               rok,
-              prijimatel_rok.group_by { |p| [p.meno, prijimatel_ico_map[p.id], p.psc, p.obec, p.opatrenie] }.map do |key, prijimatel_obec_opatrenie|
+              prijimatel_rok.group_by { |p| [p.meno, ico_by_prijimatel_id[p.id] || ico_by_ziadatel_normalized[p.meno_normalized], p.psc, p.obec, p.opatrenie] }.map do |key, prijimatel_obec_opatrenie|
                 {
                     ziadatel: key[0],
                     ico: key[1],
