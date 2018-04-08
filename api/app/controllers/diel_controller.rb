@@ -27,12 +27,11 @@ class DielController < ApplicationController
                         celkova_vymera: ziadosti_ico.sum(&:vymera)
                     }
                   end,
-                  prijimatelia: prijimatelia_ziadatel.group_by { |p| [p.meno, p.ico, p.obec, p.psc] }.map do |key, prijimatelia_obec|
+                  prijimatelia: prijimatelia_ziadatel.group_by { |p| [p.meno, p.obec, p.psc] }.map do |key, prijimatelia_obec|
                     {
                         meno: key[0],
-                        ico: key[1],
-                        obec: key[2],
-                        psc: key[3],
+                        obec: key[1],
+                        psc: key[2],
                         pocet_prijmov: prijimatelia_obec.count,
                         suma_prijmov: prijimatelia_obec.sum(&:suma)
                     }
