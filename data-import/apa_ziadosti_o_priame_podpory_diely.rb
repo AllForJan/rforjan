@@ -18,7 +18,7 @@ path = 'data/apa_ziadosti_o_priame_podpory_diely_2018-03-20.csv'
 
 puts "Cleaning up old data"
 
-DB_TABLE.truncate
+DB_TABLE.truncate(cascade: true)
 
 
 puts "Ensuring correct encoding"
@@ -32,25 +32,18 @@ puts "Importing"
 
 imported_count = 0
 
-CSV.foreach(path, col_sep: ';', quote_char: '"')
+CSV.foreach(path, col_sep: ';', quote_char: '"', headers: true)
   .lazy
-  .drop(1)
-  .map { |csv_line|
-    ico = csv_line[2]&.rjust(8, '0')&.slice(-8..-1)
+  .map { |csv_row|
+    csv_row['ICO'] = csv_row['ICO']&.rjust(8, '0')&.slice(-8..-1)
+    csv_row['Rok'] = Integer(csv_row['Rok'])
 
-    rok = Integer(csv_line[3])
+    /^(\d+(\.\d+)?) ha$/.match(csv_row['Vymera'])
+    csv_row['Vymera'] = BigDecimal($1)
 
-    /^(\d+(\.\d+)?) ha$/.match(csv_line[7])
-    vymera = BigDecimal($1)
+    ziadatel_normalized = Normalizer.normalize_name(csv_row['Ziadatel'])
 
-    ziadatel_normalized = Normalizer.normalize_name(csv_line[1])
-
-    normalized = csv_line.map(&:presence)
-    normalized[2] = ico
-    normalized[3] = rok
-    normalized[7] = vymera
-    normalized << ziadatel_normalized
-    normalized
+    csv_row.fields + [ziadatel_normalized]
   }
   .each_slice(20_000) do |slice|
     DB_TABLE.import(COLUMNS, slice)
