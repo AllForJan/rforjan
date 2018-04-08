@@ -1,6 +1,5 @@
 import requests
 import numpy as np
-import json
 from shapely.geometry import Polygon
 from shapely import wkb
 import psycopg2
@@ -8,19 +7,19 @@ import os
 import redis
 import functools
 from flask_cors import CORS
+import pickle
 
 
-REDIS_CACHE_VERSION = '2'
+REDIS_CACHE_VERSION = '3'
 redis_connection = redis.StrictRedis(host='localhost', port=6379, db=0)
 def redis_fetch_or_execute(key, executable):
     prefixed_key = f"{REDIS_CACHE_VERSION}-{key}"
     val = redis_connection.get(prefixed_key)
     if val:
-        print(val)
-        val = json.loads(val.decode('utf-8').replace("'", '"'))
+        val = pickle.loads(val)
     if not val:
         val = executable()
-        redis_connection.set(prefixed_key, val)
+        redis_connection.set(prefixed_key, pickle.dumps(val))
     return val
 
 def getPartCoords(location, part):    
