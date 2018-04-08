@@ -5,7 +5,18 @@ from shapely.geometry import Polygon
 from shapely import wkb
 import psycopg2
 import os
+import redis
 
+
+REDIS_CACHE_VERSION = '1'
+redis_connection = redis.StrictRedis(host='localhost', port=6379, db=0)
+def redis_fetch_or_execute(key, executable):
+    prefixed_key = f"{REDIS_CACHE_VERSION}-{key}"
+    val = redis_connection.get(prefixed_key)
+    if not val:
+        val = executable()
+        redis_connection.set(prefixed_key, val)
+    return val
 
 def getPartCoords(location, part):    
     query = "select geom from parts_2016 where location = '"+location+"' and part = '"+part+"'"
