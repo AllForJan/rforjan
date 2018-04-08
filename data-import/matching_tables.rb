@@ -27,7 +27,8 @@ CSV.foreach(path, col_sep: ';', quote_char: '"', headers: true)
   .lazy
   .select { |csv_row| csv_row['Ico'].present? }
   .map { |csv_row|
-    prijimatelia_ids = DB[:apa_prijimatelia].where(meno: csv_row['Origin_Name'], psc: csv_row['Origin_PSC'], obec: csv_row['Origin_Mesto']).map(:id)
+    meno = csv_row.fields[0] # For some reason csv_row['Origin_Name'] does not seem to work
+    prijimatelia_ids = DB[:apa_prijimatelia].where(meno: meno, psc: csv_row['Origin_PSC'], obec: csv_row['Origin_Mesto']).map(:id)
     finstat_ids = DB[:finstat].where(ico: csv_row['Ico']).map(:id)
     prijimatelia_ids.product(finstat_ids)
   }
