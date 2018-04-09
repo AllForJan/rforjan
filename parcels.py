@@ -24,7 +24,10 @@ def redis_fetch_or_execute(key, executable):
 
 def getPartCoords(location, part):    
     query = "select geom from parts_2016 where location = '"+location+"' and part = '"+part+"'"
-    conn_string = "postgresql://rforjan:{}@138.68.66.142:5432/rforjan".format(os.environ['PG_PASS'])
+    if os.environ['DATABASE_URL']:
+        conn_string = os.environ['DATABASE_URL']
+    else:
+        conn_string = "postgresql://rforjan:{}@138.68.66.142:5432/rforjan".format(os.environ['PG_PASS'])
     conn = psycopg2.connect(conn_string)
     curs = conn.cursor()
     curs.execute(query, (23,))  # one geometry
